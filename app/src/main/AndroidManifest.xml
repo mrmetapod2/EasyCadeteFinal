@@ -13,6 +13,12 @@
         android:theme="@style/Theme.EasyCadete"
         tools:targetApi="31">
         <activity
+            android:name=".PantallaCadete"
+            android:exported="false" />
+        <activity
+            android:name=".PantallaUsuario"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
