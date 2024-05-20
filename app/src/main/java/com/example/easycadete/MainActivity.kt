@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
         //reaccion al apretar un boton
         Boton.setOnClickListener {
-            nivelFuncion.VerificacionUsuarios(Usuario.getText().toString(), Contraseña.getText().toString())
+            nivelFuncion.VerificacionUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString())
         }
 
 
