@@ -1,11 +1,12 @@
 package com.example.easycadete
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 //uso esta clase para armar un esqueleto de una base de datos para las pruebas
-class PruebaInicial(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION)
+class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION)
     {
         companion object {
             //esto va a ser modificado para que sea exactamente la base de datos que usemos
@@ -30,13 +31,14 @@ class PruebaInicial(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             onCreate(db)
         }
 }
-class NivelDatabase {
+class NivelDatabase(context: Context) {
     //conecto a la base de datos
-
+     val baseDeDatos = BaseDeDatos(context)
 
     fun EstaEnBDD(Nombre :String, Contraseña: String): String {
         //aqui se va a llamar la base de datos pidiendole si hay un usuario con ese nombre y contraseña
         // y si es un cadete o usuario
+
         if (Nombre == "Usuario" && Contraseña== "1"){
             return "Usuario"
         }
@@ -45,6 +47,23 @@ class NivelDatabase {
         }
         else{
             return "None"
+        }
+    }
+    fun AñadirABDD(Nombre :String, Contraseña: String){
+        //se crea el objeto de añadir info a la BDD
+        val db = baseDeDatos.writableDatabase
+        //Se asigna una tabla con la info que va a la BDD
+        val values = ContentValues().apply {
+            put("Nombre", Nombre)
+            put("Contraseña", Contraseña)
+        }
+        //se crea una nueva linea en la base de datos en la tabla asignada con los valores declarados
+        val newRowId = db.insert("Personas", null, values)
+        //se chequea si funciono
+        if (newRowId != -1L) {
+            // funciono bien
+        } else {
+            // no lo fue
         }
     }
 }

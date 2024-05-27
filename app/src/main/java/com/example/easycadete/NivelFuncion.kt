@@ -8,7 +8,7 @@ class NivelFuncion {
     fun VerificacionUsuarios(context: Context,Nombre :String, Contraseña: String){
         //Aqui se van a realizar todas las funciones logicas, se hara aca para mantener el codigo de
         // las actividades limpio
-        val nivelDatabase = NivelDatabase()
+        val nivelDatabase = NivelDatabase(context)
         val result = nivelDatabase.EstaEnBDD(Nombre, Contraseña);
         if (result== "Usuario"){
             val i =Intent(context, PantallaUsuario::class.java)
