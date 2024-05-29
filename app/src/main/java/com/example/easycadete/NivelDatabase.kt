@@ -74,6 +74,9 @@ class NivelDatabase(context: Context) {
         else{
             //en este el cursor no encontro nada
             return ResultadoPersona( )
+        }.also{
+            cursor?.close()
+
         }
     }
 
