@@ -66,6 +66,7 @@ class NivelDatabase(context: Context) {
             }
             else{
                 println("no se encontro usuario y contrasela de ese tipo")
+                cursor?.close()
                 return ResultadoPersona( )
 
             }
@@ -73,11 +74,12 @@ class NivelDatabase(context: Context) {
         }
         else{
             //en este el cursor no encontro nada
-            return ResultadoPersona( )
-        }.also{
             cursor?.close()
-
+            return ResultadoPersona( )
         }
+
+
+
     }
 
     fun AñadirABDD(context: Context ,Nombre :String, Contraseña: String, EsUsuario: Boolean){
