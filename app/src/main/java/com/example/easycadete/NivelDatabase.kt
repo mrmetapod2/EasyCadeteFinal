@@ -19,12 +19,12 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
             const val COLUMN_CONT = "contraseña"
             const val CADETE_O_USUARIO= "usuarioOCadete"
 
-        private const val TABLE_CREATE =
+        private const val PERSONA_TABLE =
             "CREATE TABLE $TABLE_NAME (" +
                     "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "$COLUMN_NAME TEXT NOT NULL," +
                     "$CADETE_O_USUARIO TEXT NOT NULL," +
-                    "$COLUMN_CONT TEXT NOT NULL);"+
+                    "$COLUMN_CONT TEXT NOT NULL) "
             /*"CREATE TABLE Persona (" +
                     "ID INT PRIMARY KEY AUTOINCREMENT," +
                     "Nombre VARCHAR(100) NOT NULL," +
@@ -34,25 +34,28 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
                     "DNI VARCHAR(20) NOT NULL," +
                     "Email VARCHAR(100) NOT NULL UNIQUE," +
                     "Telefono VARCHAR(20))" +*/
-
+        private const val USUARIO_TABLE =
             "CREATE TABLE Usuario (" +
-                    "ID INT PRIMARY KEY IDENTITY(1,1)," +
-                    "ID_Persona INT NOT NULL," +
-                    "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)," +
-                    ")" +
-            "CREATE TABLE Cadete (" +
-                    "ID INT PRIMARY KEY IDENTITY(1,1)," +
-                    "ID_Persona INT NOT NULL," +
-                    "Disponibilidad BIT DEFAULT 0," +
+                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "ID_Persona INTEGER NOT NULL," +
                     "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
-                    ");"
+                    ")"
+        private const val CADETE_TABLE =
+            "CREATE TABLE Cadete (" +
+                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "ID_Persona INTEGER NOT NULL," +
+                    "Disponibilidad BOOLEAN DEFAULT 0," +
+                    "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
+                    ")"
 
 
     }
         //maneje de versiones
         override fun onCreate(db: SQLiteDatabase) {
 
-            db.execSQL(TABLE_CREATE)
+            db.execSQL(PERSONA_TABLE)
+            db.execSQL(USUARIO_TABLE)
+            db.execSQL(CADETE_TABLE)
 
         }
 
