@@ -12,24 +12,50 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
         companion object {
             //esto va a ser modificado para que sea exactamente la base de datos que usemos
          const val DATABASE_NAME = "example.db"
-         const val DATABASE_VERSION = 4
-         const val TABLE_NAME = "Personas"
+         const val DATABASE_VERSION = 5
+         const val TABLE_NAME = "Persona"
          const val COLUMN_ID = "id"
          const val COLUMN_NAME = "name"
             const val COLUMN_CONT = "contraseña"
             const val CADETE_O_USUARIO= "usuarioOCadete"
 
-        private const val TABLE_CREATE =
+        private const val PERSONA_TABLE =
             "CREATE TABLE $TABLE_NAME (" +
                     "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "$COLUMN_NAME TEXT NOT NULL," +
                     "$CADETE_O_USUARIO TEXT NOT NULL," +
-                    "$COLUMN_CONT TEXT NOT NULL)"
+                    "$COLUMN_CONT TEXT NOT NULL) "
+            /*"CREATE TABLE Persona (" +
+                    "ID INT PRIMARY KEY AUTOINCREMENT," +
+                    "Nombre VARCHAR(100) NOT NULL," +
+                    "Apellido VARCHAR(100) NOT NULL," +
+                    "Contraseña VARCHAR(100) NOT NULL," +
+                    "Edad INT NOT NULL," +
+                    "DNI VARCHAR(20) NOT NULL," +
+                    "Email VARCHAR(100) NOT NULL UNIQUE," +
+                    "Telefono VARCHAR(20))" +*/
+        private const val USUARIO_TABLE =
+            "CREATE TABLE Usuario (" +
+                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "ID_Persona INTEGER NOT NULL," +
+                    "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
+                    ")"
+        private const val CADETE_TABLE =
+            "CREATE TABLE Cadete (" +
+                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "ID_Persona INTEGER NOT NULL," +
+                    "Disponibilidad BOOLEAN DEFAULT 0," +
+                    "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
+                    ")"
+
+
     }
         //maneje de versiones
         override fun onCreate(db: SQLiteDatabase) {
 
-            db.execSQL(TABLE_CREATE)
+            db.execSQL(PERSONA_TABLE)
+            db.execSQL(USUARIO_TABLE)
+            db.execSQL(CADETE_TABLE)
 
         }
 
@@ -109,7 +135,7 @@ class NivelDatabase(context: Context) {
         }
 
         //se crea una nueva linea en la base de datos en la tabla asignada con los valores declarados
-        val newRowId = db.insert("Personas", null, values)
+        val newRowId = db.insert("Persona", null, values)
         //se chequea si funciono
         if (newRowId != -1L) {
             println("result")
