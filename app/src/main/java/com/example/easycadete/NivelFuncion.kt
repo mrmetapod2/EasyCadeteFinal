@@ -10,14 +10,14 @@ class NivelFuncion {
         // las actividades limpio
         val nivelDatabase = NivelDatabase(context)
         val result = nivelDatabase.EstaEnBDD(context,Nombre, Contraseña);
-        if (result.UsuarioOCadete== "usuario"){
+        if (result.UsuarioOCadete== "Usuario"){
             val i =Intent(context, PantallaUsuario::class.java)
             startActivity(context,i,null)
             println(result)
             //Toast.makeText(this, "usuario", Toast.LENGTH_LONG).show()
 
         }
-        else if (result.UsuarioOCadete== "cadete"){
+        else if (result.UsuarioOCadete== "Cadete"){
             val i =Intent(context, PantallaCadete::class.java)
             startActivity(context,i,null)
             println(result)
@@ -30,10 +30,10 @@ class NivelFuncion {
         }
 
     }
-    fun RegistrarUsuarios(context: Context,Nombre :String, Contraseña: String,EsUsuario: Boolean){
+    fun RegistrarUsuarios(context: Context,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String,EsUsuario: Boolean){
 
         val nivelDatabase = NivelDatabase(context)
-        val result = nivelDatabase.AñadirABDD(context, Nombre, Contraseña,EsUsuario);
+        val result = nivelDatabase.AñadirABDD(context, Nombre, Contraseña,Apellido,Edad,Email,DNI,EsUsuario);
         println(result)
     }
 }
