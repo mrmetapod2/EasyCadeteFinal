@@ -1,9 +1,12 @@
 package Solicitud_Entrega
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.easycadete.R
@@ -11,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.easycadete.MostrarPersonas
 import com.example.easycadete.NivelFuncion
+import com.example.easycadete.Registrar
 import com.example.easycadete.ResultadoPersona
 
 
@@ -31,8 +35,13 @@ class Solicitud : AppCompatActivity() {
         val adapter = MostrarPersonas(personas) { persona ->
             onActionButtonClick(persona)
         }
+        val PaqueteBut= findViewById<Button>(R.id.button5)
         recyclerView.adapter = adapter
         println("awoooga")
+        PaqueteBut.setOnClickListener {
+            val i = Intent(this, Paquete::class.java)
+            ContextCompat.startActivity(this, i, null)
+        }
     }
     private fun onActionButtonClick(persona: ResultadoPersona) {
         // Implement the action you want to perform when the button is clicked
