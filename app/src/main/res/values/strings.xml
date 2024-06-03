@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">EasyCadete</string>
+    <string name="marker_title">lugar</string>
+    <string name="btn_change">Buscar</string>
+    <string name="marker_title_from">Pin Marcado</string>
+    <string name="marker_title_to">Hasta</string>
+    <string name="cambiar_btn">Cambiar</string>
+    <string name="guardar_btn">Guardar</string>
 </resources>
