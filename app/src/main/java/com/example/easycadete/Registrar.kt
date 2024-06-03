@@ -27,19 +27,28 @@ class Registrar : AppCompatActivity() {
         val Usuario= findViewById<EditText>(R.id.editTextText2)
         val Contraseña= findViewById<EditText>(R.id.editTextText3)
         val RegistrarBut= findViewById<Button>(R.id.button2)
+        val Apellido= findViewById<EditText>(R.id.editTextText4)
+        val Edad= findViewById<EditText>(R.id.editTextText5)
+        val Email= findViewById<EditText>(R.id.editTextText6)
+        val DNI= findViewById<EditText>(R.id.editTextText7)
         val nivelFuncion = NivelFuncion()
         val EsUsuario=findViewById<RadioButton>(R.id.radioButton)
         val EsCadete=findViewById<RadioButton>(R.id.radioButton2)
         RegistrarBut.setOnClickListener {
             if (EsUsuario.isChecked){
-                nivelFuncion.RegistrarUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString(),true)
+                println("usuario")
+                nivelFuncion.RegistrarUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString(),
+                    Apellido.getText().toString(),Edad.getText().toString(),Email.getText().toString(),DNI.getText().toString(),true)
                 val i = Intent(this, MainActivity::class.java)
                 ContextCompat.startActivity(this, i, null)
             }
             else if (EsCadete.isChecked){
-                nivelFuncion.RegistrarUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString(),false)
+                println("cadete")
+                nivelFuncion.RegistrarUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString(),
+                    Apellido.getText().toString(),Edad.getText().toString(),Email.getText().toString(),DNI.getText().toString(),false)
                 val i = Intent(this, MainActivity::class.java)
                 ContextCompat.startActivity(this, i, null)
+
             }
             else{
                 println("no se eligio usuario o cadete")
