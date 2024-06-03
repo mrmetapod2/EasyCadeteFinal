@@ -36,16 +36,19 @@ class Registrar : AppCompatActivity() {
         val EsCadete=findViewById<RadioButton>(R.id.radioButton2)
         RegistrarBut.setOnClickListener {
             if (EsUsuario.isChecked){
+                println("usuario")
                 nivelFuncion.RegistrarUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString(),
                     Apellido.getText().toString(),Edad.getText().toString(),Email.getText().toString(),DNI.getText().toString(),true)
                 val i = Intent(this, MainActivity::class.java)
                 ContextCompat.startActivity(this, i, null)
             }
             else if (EsCadete.isChecked){
+                println("cadete")
                 nivelFuncion.RegistrarUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString(),
                     Apellido.getText().toString(),Edad.getText().toString(),Email.getText().toString(),DNI.getText().toString(),false)
                 val i = Intent(this, MainActivity::class.java)
                 ContextCompat.startActivity(this, i, null)
+
             }
             else{
                 println("no se eligio usuario o cadete")

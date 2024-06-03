@@ -35,7 +35,7 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
                     "Contraseña VARCHAR(100) NOT NULL," +
                     "Edad INTEGER NOT NULL," +
                     "DNI VARCHAR(20) NOT NULL," +
-                    "Email VARCHAR(100) NOT NULL UNIQUE," +
+                    "Email VARCHAR(100) NOT NULL," +
                     "Telefono VARCHAR(20))"
         private const val USUARIO_TABLE =
             "CREATE TABLE $USUARIO_TABLE_NAME (" +
@@ -47,7 +47,7 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
             "CREATE TABLE $CADETE_TABLE_NAME (" +
                     "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "ID_Persona INTEGER NOT NULL," +
-                    "Disponibilidad BOOLEAN DEFAULT 0," +
+                    "Disponibilidad BOOLEAN DEFAULT 1," +
                     "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
                     ")"
 
@@ -93,10 +93,11 @@ class NivelDatabase(context: Context) {
 
         //si no esta vacio sacar el nombre contraseña y estado si es usuario o cadete
         if (cursor != null && cursor.moveToFirst()){
+            println(cursor)
             //se chequea con db.query si la ID de la persona coincide con una ID_persona adentro de ellas
             val resUsuario= db.query(
                 BaseDeDatos.USUARIO_TABLE_NAME,
-                arrayOf(BaseDeDatos.COLUMN_ID),
+                arrayOf(BaseDeDatos.COLUMN_ID , "ID_Persona"),
                 "ID_Persona = ? ",
                 arrayOf(cursor.getString(cursor.getColumnIndexOrThrow("ID"))),
                 null,
@@ -104,8 +105,8 @@ class NivelDatabase(context: Context) {
                 null
             )
             val resCadete= db.query(
-                BaseDeDatos.CADETE_TABLE_NAME,
-                arrayOf(BaseDeDatos.COLUMN_ID),
+                "Cadete",
+                arrayOf(BaseDeDatos.COLUMN_ID, "ID_Persona"),
                 "ID_Persona = ? ",
                 arrayOf(cursor.getString(cursor.getColumnIndexOrThrow("ID"))),
                 null,
@@ -113,9 +114,18 @@ class NivelDatabase(context: Context) {
                 null
             )
             var UsuarioOCadete: String
+
+
             //si no esta en usuario o cadete esta null
-            if (resUsuario!=null){ UsuarioOCadete="Usuario"}
-            else if (resCadete!=null){ UsuarioOCadete="Cadete"}
+            if (resUsuario!=null&&resUsuario.moveToFirst()){
+
+                println(resUsuario.getString(resUsuario.getColumnIndexOrThrow("ID_Persona")))
+                UsuarioOCadete="Usuario"
+            }
+            else if (resCadete!=null&&resCadete.moveToFirst()){
+                println(resCadete.getString(resCadete.getColumnIndexOrThrow("ID_Persona")))
+                UsuarioOCadete="Cadete"
+            }
             else{ UsuarioOCadete="null"}
             //convierto los datos conseguidos en variables
             val dbNombre =cursor.getString(cursor.getColumnIndexOrThrow("Nombre"))
@@ -125,6 +135,7 @@ class NivelDatabase(context: Context) {
             val dbEdad = cursor.getString(cursor.getColumnIndexOrThrow("Edad"))
             val dbDNI = cursor.getString(cursor.getColumnIndexOrThrow("DNI"))
             val dbEmail =cursor.getString(cursor.getColumnIndexOrThrow("Email"))
+
             //si coincide la data dada con lo puesto en Nombre y contraseña se retorna
             if (dbNombre == Nombre && dbContraseña == Contraseña) {
                 cursor?.close()
@@ -162,7 +173,7 @@ class NivelDatabase(context: Context) {
         }
         // esta variable va a representar la ID de la columna persona que vamos a añadir
         var newRowId:Long
-        if (EsUsuario){
+        if (EsUsuario== true){
              values = ContentValues().apply {
                 put("Nombre", Nombre)
                 put("Contraseña", Contraseña)
@@ -178,6 +189,7 @@ class NivelDatabase(context: Context) {
             db.insert("Usuario",null, valuesUsu)
         }
         else{
+
             values = ContentValues().apply {
                 put("Nombre", Nombre)
                 put("Contraseña", Contraseña)
@@ -203,5 +215,70 @@ class NivelDatabase(context: Context) {
             println("no")
             // no lo fue
         }
+    }
+    fun AsignarCadetes(context: Context): MutableList<ResultadoPersona> {
+        //convierto la base de datos a una variable
+        baseDeDatos = BaseDeDatos(context)
+        val db = baseDeDatos.readableDatabase
+        //creo una variable con todos los cadetes disponibles
+        val CadetesDisponibles = mutableListOf<ResultadoPersona>()
+        //genero un resultado a base de lo buscado
+        val resultado= db.query(
+            BaseDeDatos.CADETE_TABLE_NAME,
+            arrayOf(BaseDeDatos.COLUMN_ID,"ID_Persona", "Disponibilidad"),
+            "Disponibilidad = 1",
+            null,
+            null,
+            null,
+            null
+        )
+
+        //se crea un cursor con todos los casos encontrados en la base de datos
+        val cursor = resultado
+
+
+
+        //si no esta vacio sacar el nombre contraseña y estado si es usuario o cadete
+        while (cursor != null && cursor.moveToNext()){
+            println("pepe")
+            val dbPersonaID=cursor.getString(cursor.getColumnIndexOrThrow("ID_Persona"))
+            //estos van a ser los resultados de los cadetes buscados
+            val compatibles =db.query(
+                BaseDeDatos.TABLE_NAME,
+                arrayOf(BaseDeDatos.COLUMN_ID,"Nombre", "Contraseña", "Apellido", "Edad", "DNI", "Email"),
+                "ID = ?",
+                arrayOf(dbPersonaID),
+                null,
+                null,
+                null
+            )
+            while (compatibles != null && compatibles.moveToNext()) {
+                println("lepeu")
+                //convierto los datos conseguidos en variables
+                val dbNombre = compatibles.getString(compatibles.getColumnIndexOrThrow("Nombre"))
+                val dbContraseña = compatibles.getString(compatibles.getColumnIndexOrThrow("Contraseña"))
+                val dbApellido = compatibles.getString(compatibles.getColumnIndexOrThrow("Apellido"))
+                val dbID = compatibles.getString(compatibles.getColumnIndexOrThrow("ID"))
+                val dbEdad = compatibles.getString(compatibles.getColumnIndexOrThrow("Edad"))
+                val dbDNI = compatibles.getString(compatibles.getColumnIndexOrThrow("DNI"))
+                val dbEmail = compatibles.getString(compatibles.getColumnIndexOrThrow("Email"))
+                //creo una persona con esos datos
+                val CadeteEncontrado = ResultadoPersona(
+                    dbNombre,
+                    dbContraseña,
+                    dbID,
+                    dbApellido,
+                    dbEdad,
+                    dbDNI,
+                    dbEmail,
+                    null,
+                    "Cadete"
+                )
+                CadetesDisponibles.add(CadeteEncontrado)
+            }
+        }
+
+        return CadetesDisponibles
+
     }
 }
