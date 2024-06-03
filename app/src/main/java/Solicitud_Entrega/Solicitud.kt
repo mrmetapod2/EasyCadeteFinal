@@ -32,7 +32,7 @@ class Solicitud : AppCompatActivity() {
             onActionButtonClick(persona)
         }
         recyclerView.adapter = adapter
-
+        println("awoooga")
     }
     private fun onActionButtonClick(persona: ResultadoPersona) {
         // Implement the action you want to perform when the button is clicked
