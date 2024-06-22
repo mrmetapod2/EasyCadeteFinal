@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.easycadete.MostrarPersonas
 import com.example.easycadete.NivelFuncion
-import com.example.easycadete.Registrar
 import com.example.easycadete.ResultadoPersona
 
 
@@ -22,7 +21,7 @@ class Solicitud : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_solicitud)
+        setContentView(R.layout.activity_solicitud_cadete)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
