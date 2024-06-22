@@ -25,7 +25,7 @@
         <activity
             android:name="Solicitud_Entrega.Paquete" />
         <activity
-            android:name="Solicitud_Entrega.Solicitud" />
+            android:name="Solicitud_Entrega.Solicitud_Cadete" />
         <activity
             android:name=".MainActivity"
             android:exported="true" >
