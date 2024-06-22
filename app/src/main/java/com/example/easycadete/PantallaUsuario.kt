@@ -1,6 +1,6 @@
 package com.example.easycadete
 
-import Solicitud_Entrega.Solicitud
+import Solicitud_Entrega.Solicitud_Cadete
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -24,7 +24,7 @@ class PantallaUsuario : AppCompatActivity() {
         val PedidoBut= findViewById<Button>(R.id.button4)
 
         PedidoBut.setOnClickListener {
-            val i = Intent(this, Solicitud::class.java)
+            val i = Intent(this, Solicitud_Cadete::class.java)
             ContextCompat.startActivity(this, i, null)
         }
     }

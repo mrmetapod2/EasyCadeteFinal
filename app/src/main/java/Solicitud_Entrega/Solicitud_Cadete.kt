@@ -17,7 +17,7 @@ import com.example.easycadete.NivelFuncion
 import com.example.easycadete.ResultadoPersona
 
 
-class Solicitud : AppCompatActivity() {
+class Solicitud_Cadete : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

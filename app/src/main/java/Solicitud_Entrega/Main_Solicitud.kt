@@ -38,12 +38,12 @@ class Main_Solicitud : AppCompatActivity() {
         card2 = findViewById(R.id.cardView2)
 
         btnOrigen.setOnClickListener {
-            val intent = Intent(this, Solicitud::class.java)
+            val intent = Intent(this, Solicitud_Cadete::class.java)
             startActivityForResult(intent, REQUEST_CODE_ORIGEN)
         }
 
         btnDest.setOnClickListener {
-            val intent = Intent(this, Solicitud::class.java)
+            val intent = Intent(this, Solicitud_Cadete::class.java)
             startActivityForResult(intent, REQUEST_CODE_DEST)
         }
     }
