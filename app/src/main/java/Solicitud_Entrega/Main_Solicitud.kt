@@ -55,7 +55,6 @@ class Main_Solicitud : AppCompatActivity() {
                 REQUEST_CODE_ORIGEN -> {
                     textOrigen.text = returnValue
                     if (!returnValue.isNullOrEmpty()) {
-
                         card2.visibility = View.VISIBLE
                     }
                 }
