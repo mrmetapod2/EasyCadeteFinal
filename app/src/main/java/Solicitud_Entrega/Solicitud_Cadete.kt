@@ -38,7 +38,7 @@ class Solicitud_Cadete : AppCompatActivity() {
         recyclerView.adapter = adapter
         println("awoooga")
         PaqueteBut.setOnClickListener {
-            val i = Intent(this, Paquete::class.java)
+            val i = Intent(this, Main_Solicitud::class.java)
             ContextCompat.startActivity(this, i, null)
         }
     }
