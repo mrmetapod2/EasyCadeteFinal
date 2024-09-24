@@ -13,19 +13,19 @@ class NivelFuncion {
         if (result.UsuarioOCadete== "Usuario"){
             val i =Intent(context, PantallaUsuario::class.java)
             startActivity(context,i,null)
-            println(result)
+            //println(result)
             //Toast.makeText(this, "usuario", Toast.LENGTH_LONG).show()
 
         }
         else if (result.UsuarioOCadete== "Cadete"){
             val i =Intent(context, PantallaCadete::class.java)
             startActivity(context,i,null)
-            println(result)
+            //println(result)
             //Toast.makeText(this, "Cadete", Toast.LENGTH_LONG).show()
 
         }
         else{
-            println(result)
+            //println(result)
             //Toast.makeText(this, "nada", Toast.LENGTH_LONG).show()
         }
 

@@ -47,7 +47,7 @@ import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 
-class Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
+class  Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
 
     private lateinit var map:GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient

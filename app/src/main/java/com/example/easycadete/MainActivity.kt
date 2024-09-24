@@ -2,6 +2,7 @@ package com.example.easycadete
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
@@ -29,9 +30,11 @@ class MainActivity : AppCompatActivity() {
 
         //reaccion al apretar un boton
         Ingresar.setOnClickListener {
+
             nivelFuncion.VerificacionUsuarios(this,Usuario.getText().toString(), Contraseña.getText().toString())
         }
         RegistrarBut.setOnClickListener {
+
             val i = Intent(this, Registrar::class.java)
             ContextCompat.startActivity(this, i, null)
         }

@@ -2,10 +2,18 @@ package com.example.easycadete
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.provider.ContactsContract.Intents.Insert
+import android.widget.Toast
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+
+
+import java.io.IOException
 
 //uso esta clase para armar un esqueleto de una base de datos para las pruebas
 class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION)
@@ -72,11 +80,58 @@ class NivelDatabase(context: Context) {
     //conecto a la base de datos
     private lateinit  var baseDeDatos : BaseDeDatos
 
+    //CUANDO TRABAJES EN ESTO REEMPLAZA CON TU IP
+    val IP="192.168.0.2"
+    //url para la base de datos
+    val url= String.format("http://%S/easycadete/server.php",IP)
+     val client = OkHttpClient()
+
     fun EstaEnBDD(context: Context,Nombre :String, Contraseña: String) : ResultadoPersona {
+
         //convierto la base de datos a una variable
         baseDeDatos = BaseDeDatos(context)
         val db = baseDeDatos.readableDatabase
         //genero un resultado a base de lo buscado
+         val query=String.format("SELECT * FROM `persona` WHERE `Nombre`=%S and `Contraseña`=%S", Nombre, Contraseña)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+
+
+
+
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+
+                if (response.isSuccessful) {
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    val responseData = response.body!!.string()
+                    println(responseData)
+                        //Toast.makeText(context, responseData, Toast.LENGTH_SHORT)
+                          //  .show()
+
+
+                }
+            }
+        })
+
+
+
+
         val resultado= db.query(
             BaseDeDatos.TABLE_NAME,
             arrayOf(BaseDeDatos.COLUMN_ID,"Nombre", "Contraseña", "Apellido", "Edad", "DNI", "Email"),
@@ -161,60 +216,109 @@ class NivelDatabase(context: Context) {
     }
 
     fun AñadirABDD(context: Context ,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String, EsUsuario: Boolean){
-        baseDeDatos = BaseDeDatos(context)
+        var insertedID=0;
 
-        //se crea el objeto de añadir info a la BDD
 
-        val db = baseDeDatos.writableDatabase
-        //Se asigna una tabla con la info que va a la BDD
-        var values = ContentValues().apply {
-            put("name", Nombre)
-            put("contraseña", Contraseña)
-        }
-        // esta variable va a representar la ID de la columna persona que vamos a añadir
-        var newRowId:Long
-        if (EsUsuario== true){
-             values = ContentValues().apply {
-                put("Nombre", Nombre)
-                put("Contraseña", Contraseña)
-                 put("Apellido", Apellido)
-                 put("Edad", Edad)
-                 put("DNI", DNI)
-                 put("Email", Email)
 
+        //genero un resultado a base de lo buscado
+        val query=String.format("INSERT INTO `persona`( `Nombre`, `Contraseña`, `Apellido`, `Edad`, `DNI`, `Email`,  `esUsuario`) " +
+                "VALUES ('%S','%S','%S','%S','%S','%S','%S')", Nombre, Contraseña, Apellido, Edad, DNI, Email, EsUsuario)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
             }
-            newRowId = db.insert("Persona", null, values)
-            //se crea la conexion entre esta persona y su categoria de eleccion
-            val valuesUsu= ContentValues().apply { put("ID_Persona",newRowId) }
-            db.insert("Usuario",null, valuesUsu)
-        }
-        else{
 
-            values = ContentValues().apply {
-                put("Nombre", Nombre)
-                put("Contraseña", Contraseña)
-                put("Apellido", Apellido)
-                put("Edad", Edad)
-                put("DNI", DNI)
-                put("Email", Email)
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    //se pone la id para que sea cadete o usuario
+                     insertedID= response.body!!.string().toInt()
+                    println(insertedID)
+                    if (EsUsuario== true){
+                        val query= String.format( "INSERT INTO `usuario`( `ID_Persona`, `NombreUsuario`) VALUES ('%S','%S')", insertedID, Nombre)
+                        val formBody = FormBody.Builder()
+                            .add("sql", query)
+
+                            .build()
+                        //transfomo la form a una request
+                        val request= Request.Builder()
+                            .url(url)
+                            .post(formBody)
+                            .build()
+
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                e.printStackTrace()
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                                    for ((name, value) in response.headers) {
+                                         println("$name: $value")
+                                     }
+                                    println(response.body!!.string())
+                                }
+                            }
+                        })
+                    }
+                    else{
+
+                        val query= String.format("INSERT INTO `cadete`( `ID_Persona`, `NombreUsuario`) VALUES ('%S','%S')", insertedID, Nombre)
+                        val formBody = FormBody.Builder()
+                            .add("sql", query)
+
+                            .build()
+                        //transfomo la form a una request
+                        val request= Request.Builder()
+                            .url(url)
+                            .post(formBody)
+                            .build()
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                e.printStackTrace()
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                                    for ((name, value) in response.headers) {
+                                        println("$name: $value")
+                                    }
+                                    println(response.body!!.string())
+                                }
+                            }
+                        })
+
+                    }
+
+                }
             }
-            newRowId = db.insert("Persona", null, values)
-            val valuesUsu= ContentValues().apply { put("ID_Persona",newRowId) }
-            db.insert("Cadete",null, valuesUsu)
+        })
 
-        }
 
-        //se crea una nueva linea en la base de datos en la tabla asignada con los valores declarados
 
-        //se chequea si funciono
-        if (newRowId != -1L) {
-            println("result")
-            // funciono bien
-        } else {
-            println("no")
-            // no lo fue
-        }
+
+
+
+
     }
     fun AsignarCadetes(context: Context): MutableList<ResultadoPersona> {
         //convierto la base de datos a una variable
