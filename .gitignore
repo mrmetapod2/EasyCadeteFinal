@@ -13,3 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+/node_modules/ansi-colors/types/index.d.ts

@@ -9,7 +9,8 @@ data class ResultadoPersona(
     val DNI: String?=null,
     val Email: String?=null,
     val Telefono: String?=null,
-    val UsuarioOCadete: String?=null
+    var UsuarioOCadete: String?=null,
+    val Locacion : String?=null
 )
 
 

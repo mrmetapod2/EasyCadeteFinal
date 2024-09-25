@@ -10,6 +10,7 @@ class NivelFuncion {
         // las actividades limpio
         val nivelDatabase = NivelDatabase(context)
         val result = nivelDatabase.EstaEnBDD(context,Nombre, Contraseña);
+        println(result)
         if (result.UsuarioOCadete== "Usuario"){
             val i =Intent(context, PantallaUsuario::class.java)
             startActivity(context,i,null)
