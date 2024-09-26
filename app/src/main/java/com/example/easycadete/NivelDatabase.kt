@@ -86,26 +86,26 @@ class NivelDatabase(context: Context) {
     val IP="192.168.0.2"
     //url para la base de datos
     val url= String.format("http://%S/easycadete/server.php",IP)
-     val client = OkHttpClient()
+    val client = OkHttpClient()
 
     fun EstaEnBDD(context: Context,Nombre :String, Contraseña: String) : ResultadoPersona {
+        //preparo la variable que va a retornar
         var resultadoPersona = ResultadoPersona()
-        //convierto la base de datos a una variable
-        baseDeDatos = BaseDeDatos(context)
-        val db = baseDeDatos.readableDatabase
-        //genero un resultado a base de lo buscado
+
+
+        //preparo la querry para la base de datos con los datos extraidos
          val query=String.format("SELECT * FROM `persona` WHERE `Nombre`='%S' and `Contraseña`='%S'", Nombre, Contraseña)
-        //genero la form con lo que estoy buscando
+        //genero un form con la query
         val formBody = FormBody.Builder()
             .add("sql", query)
 
             .build()
-        //transfomo la form a una request
+        //lo combierto en un request
         val request= Request.Builder()
             .url(url)
             .post(formBody)
             .build()
-        //realizo la request con manejo de errores
+        //creo una coundownlatch para que se espere hasta que termine el servidor
         val countDownLatch = CountDownLatch(1)
         client.newCall(request).enqueue(object : Callback {
 
@@ -126,10 +126,12 @@ class NivelDatabase(context: Context) {
                     }
                     val responseData = response.body!!.string()
                     println(responseData)
-                    try {
+                    try { //se intenta crear un jsonobject a base de lo que hay en la base de datos
                         val jsonObject = JSONObject(responseData)
+                        println(jsonObject)
+                        //si el usuario esta verificado
                         if (jsonObject.optString("Verificacion")=="1") {
-
+                            //se modifica resultado persona con los datos
                             resultadoPersona = ResultadoPersona(
                                 ID = jsonObject.getString("ID"),
                                 Nombre = jsonObject.getString("Nombre"),
@@ -142,6 +144,7 @@ class NivelDatabase(context: Context) {
                                 Locacion = jsonObject.optString("Locacion"),
                                 Telefono = jsonObject.optString("Telefono")
                             )
+                            //de aqui se realiza una query para ver si es cadete o Usuario
                             val query=String.format("SELECT * FROM `usuario` WHERE `ID_Persona`='%S'", resultadoPersona.ID)
                             //genero la form con lo que estoy buscando
                             val formBody = FormBody.Builder()
@@ -239,6 +242,7 @@ class NivelDatabase(context: Context) {
 
 
                     catch (e: Exception) {
+                        //si el crear el jsonobject falla se retorna un ResultadoPersona vacio
                         e.printStackTrace()
                         countDownLatch.countDown()
                     }
@@ -270,12 +274,13 @@ class NivelDatabase(context: Context) {
     }
 
     fun AñadirABDD(context: Context ,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String, EsUsuario: Boolean){
+        //variable establecida para saber donde esta la nueva persona
         var insertedID=0;
 
 
 
-        //genero un resultado a base de lo buscado
 
+        //genero la query de sql
         val query=String.format("INSERT INTO `persona`( `Nombre`, `Contraseña`, `Apellido`, `Edad`, `DNI`, `Email`) " +
                 "VALUES ('%S','%S','%S','%S','%S','%S')", Nombre, Contraseña, Apellido, Edad, DNI, Email)
         //genero la form con lo que estoy buscando
@@ -291,6 +296,7 @@ class NivelDatabase(context: Context) {
 
         //realizo la request con manejo de errores
         client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
             override fun onFailure(call: Call, e: IOException) {
 
                 e.printStackTrace()
@@ -298,19 +304,23 @@ class NivelDatabase(context: Context) {
             }
 
             override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
                 response.use {
+                    //si response es un error entonces lo tira
                     if (!response.isSuccessful) throw IOException("Unexpected code $response")
-
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
                     for ((name, value) in response.headers) {
                         println("$name: $value")
                     }
-                    //se pone la id para que sea cadete o usuario
+                    //se crea una string con la respuesta del SQL siempre va a ser el ID del usuario puesto
                     val ResponseNumber=response.body!!.string()
+                    //si se puede combertir en un numero se hace
                     if (ResponseNumber.toDoubleOrNull() != null){
 
 
                         insertedID= ResponseNumber.toInt()
                         println(insertedID)
+                        //se realiza otro insert con insertedID como clave foranea para usuario o cadete dependiendo lo decidido por el usuario
                         if (EsUsuario== true){
                             val query= String.format( "INSERT INTO `usuario`( `ID_Persona`, `NombreUsuario`) VALUES ('%S','%S')", insertedID, Nombre)
                             val formBody = FormBody.Builder()
@@ -395,67 +405,88 @@ class NivelDatabase(context: Context) {
 
     }
     fun AsignarCadetes(context: Context): MutableList<ResultadoPersona> {
-        //convierto la base de datos a una variable
-        baseDeDatos = BaseDeDatos(context)
-        val db = baseDeDatos.readableDatabase
-        //creo una variable con todos los cadetes disponibles
+        //creo la lista de output
         val CadetesDisponibles = mutableListOf<ResultadoPersona>()
-        //genero un resultado a base de lo buscado
-        val resultado= db.query(
-            BaseDeDatos.CADETE_TABLE_NAME,
-            arrayOf(BaseDeDatos.COLUMN_ID,"ID_Persona", "Disponibilidad"),
-            "Disponibilidad = 1",
-            null,
-            null,
-            null,
-            null
-        )
+        //armo una variable que tendra los resultados de la query
+        var responseText=""
+        //genero la query de sql
+        val query="SELECT cadete.Disponibilidad, persona.ID, persona.Locacion, persona.Nombre, persona.Contraseña, persona.Apellido, persona.Edad, persona.DNI, persona.Email FROM persona, cadete WHERE cadete.ID_Persona = persona.ID AND persona.Verificacion=1 AND cadete.Disponibilidad=1;"
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
 
-        //se crea un cursor con todos los casos encontrados en la base de datos
-        val cursor = resultado
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //creo un countdown para esperar al server
+        val countDownLatch = CountDownLatch(1)
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    responseText = response.body!!.string()
+                    countDownLatch.countDown()
+                }
+            }
+        })
+        //espero hasta que toda la logica del servidor este completada
+        countDownLatch.await()
+        println("lalalan")
+        println(responseText)
 
 
+        // corto el input a una serie de strings con cada respuesta
+        val jsonStrings = responseText.split("<br>")
+        // creo la lista de json donde va a ir la info
+        val jsonObjects = mutableListOf<JSONObject>()
 
-        //si no esta vacio sacar el nombre contraseña y estado si es usuario o cadete
-        while (cursor != null && cursor.moveToNext()){
-            println("pepe")
-            val dbPersonaID=cursor.getString(cursor.getColumnIndexOrThrow("ID_Persona"))
-            //estos van a ser los resultados de los cadetes buscados
-            val compatibles =db.query(
-                BaseDeDatos.TABLE_NAME,
-                arrayOf(BaseDeDatos.COLUMN_ID,"Nombre", "Contraseña", "Apellido", "Edad", "DNI", "Email"),
-                "ID = ?",
-                arrayOf(dbPersonaID),
-                null,
-                null,
-                null
-            )
-            while (compatibles != null && compatibles.moveToNext()) {
-                println("lepeu")
-                //convierto los datos conseguidos en variables
-                val dbNombre = compatibles.getString(compatibles.getColumnIndexOrThrow("Nombre"))
-                val dbContraseña = compatibles.getString(compatibles.getColumnIndexOrThrow("Contraseña"))
-                val dbApellido = compatibles.getString(compatibles.getColumnIndexOrThrow("Apellido"))
-                val dbID = compatibles.getString(compatibles.getColumnIndexOrThrow("ID"))
-                val dbEdad = compatibles.getString(compatibles.getColumnIndexOrThrow("Edad"))
-                val dbDNI = compatibles.getString(compatibles.getColumnIndexOrThrow("DNI"))
-                val dbEmail = compatibles.getString(compatibles.getColumnIndexOrThrow("Email"))
-                //creo una persona con esos datos
-                val CadeteEncontrado = ResultadoPersona(
-                    dbNombre,
-                    dbContraseña,
-                    dbID,
-                    dbApellido,
-                    dbEdad,
-                    dbDNI,
-                    dbEmail,
-                    null,
-                    "Cadete"
+        // voy por las strings y las convierto en jsonobjects
+        for (jsonString in jsonStrings) {
+            if (jsonString.isNotEmpty()) {
+                val jsonObject = JSONObject(jsonString)
+                // cuando ya son JSONobject lo añado a los resultados
+                val resultadoPersona = ResultadoPersona(
+                    ID = jsonObject.getString("ID"),
+                    Nombre = jsonObject.getString("Nombre"),
+                    Contraseña = jsonObject.getString("Contraseña"),
+                    Apellido = jsonObject.getString("Apellido"),
+                    Edad = jsonObject.getString("Edad"),
+                    DNI = jsonObject.getString("DNI"),
+                    Email = jsonObject.getString("Email"),
+
+                    Locacion = jsonObject.optString("Locacion"),
+                    Telefono = jsonObject.optString("Telefono"),
+                    //el resultado siempre va a ser cadetes porque sale de la tabla de cadetes
+                    UsuarioOCadete = "Cadete"
                 )
-                CadetesDisponibles.add(CadeteEncontrado)
+                CadetesDisponibles.add(resultadoPersona)
             }
         }
 
+
+
+
+
+
+
+
+
+
+
+        //retorno lista de personas
         return CadetesDisponibles
 
     }
