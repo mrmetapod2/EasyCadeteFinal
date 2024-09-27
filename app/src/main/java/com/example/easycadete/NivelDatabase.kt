@@ -87,6 +87,7 @@ class NivelDatabase(context: Context) {
     //url para la base de datos
     val url= String.format("http://%S/easycadete/server.php",IP)
     val client = OkHttpClient()
+    val urlEmail=String.format("http://%S/easycadete/sendEmail.php",IP)
 
     fun EstaEnBDD(context: Context,Nombre :String, Contraseña: String) : ResultadoPersona {
         //preparo la variable que va a retornar
