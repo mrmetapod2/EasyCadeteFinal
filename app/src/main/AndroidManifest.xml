@@ -21,10 +21,7 @@
         <activity
             android:name=".RecuperarContrasenia"
             android:exported="false" />
-        <activity
-            android:name=".RecuperacionContrasenia"
-            android:exported="false"
-            android:theme="@style/Theme.EasyCadete" />
+
         <activity
             android:name="Solicitud_Entrega.Solicitud_Envio"
             android:exported="false" />
