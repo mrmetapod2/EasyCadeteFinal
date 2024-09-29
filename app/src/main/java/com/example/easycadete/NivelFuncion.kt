@@ -2,9 +2,20 @@ package com.example.easycadete
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
 
 class NivelFuncion {
+    fun EnviarEmail(context: Context, Email: String){
+        val nivelDatabase= NivelDatabase(context)
+        //esto chequea si lo que pusiste en el texto es un EMAIL
+        if(android.util.Patterns.EMAIL_ADDRESS.matcher(Email).matches()){
+            nivelDatabase.EnviarRecuperacion(context,Email)
+        }
+        else{
+            Toast.makeText(context, "Texto ingresado no es un Email", Toast.LENGTH_SHORT).show()
+        }
+    }
     fun VerificacionUsuarios(context: Context,Nombre :String, Contraseña: String){
         //Aqui se van a realizar todas las funciones logicas, se hara aca para mantener el codigo de
         // las actividades limpio

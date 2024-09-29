@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
         val Contraseña= findViewById<EditText>(R.id.editTextTextPassword)
         val Ingresar= findViewById<Button>(R.id.button)
         val RegistrarBut= findViewById<Button>(R.id.button3)
+        val ContraseñaBut= findViewById<Button>(R.id.button6)
         val nivelFuncion = NivelFuncion()
         dbHelper = BaseDeDatos(this)
 
@@ -36,6 +37,10 @@ class MainActivity : AppCompatActivity() {
         RegistrarBut.setOnClickListener {
 
             val i = Intent(this, Registrar::class.java)
+            ContextCompat.startActivity(this, i, null)
+        }
+        ContraseñaBut.setOnClickListener {
+            val i = Intent(this, RecuperarContrasenia::class.java)
             ContextCompat.startActivity(this, i, null)
         }
 

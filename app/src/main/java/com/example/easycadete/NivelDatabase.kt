@@ -12,9 +12,12 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+
 import org.json.JSONObject
+import org.mindrot.jbcrypt.BCrypt
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
+
 
 
 //uso esta clase para armar un esqueleto de una base de datos para las pruebas
@@ -88,14 +91,91 @@ class NivelDatabase(context: Context) {
     val url= String.format("http://%S/easycadete/server.php",IP)
     val client = OkHttpClient()
     val urlEmail=String.format("http://%S/easycadete/sendEmail.php",IP)
+    val urlVerif=String.format("http://%S/easycadete/verify.php",IP)
+    val urlPass=String.format("http://%S/easycadete/newPassword.php",IP)
 
+
+    fun EnviarRecuperacion(context: Context, Email: String){
+        //preparo la querry para la base de datos con los datos extraidos
+        val query=String.format("SELECT * FROM `persona` WHERE `Email`='%s'", Email)
+        //genero un form con la query
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //lo combierto en un request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+        //creo una coundownlatch para que se espere hasta que termine el servidor
+        val countDownLatch = CountDownLatch(1)
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+                countDownLatch.countDown();
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+
+                if (response.isSuccessful) {
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    val responseData = response.body!!.string()
+                    try { //se intenta crear un jsonobject a base de lo que hay en la base de datos
+                        val jsonObject = JSONObject(responseData)
+                        val formBody = FormBody.Builder()
+                            .add("email", Email)
+                            .add("subject", "Recuperacion de contraseña")
+                            .add("link", urlPass)
+
+                            .build()
+                        //transfomo la form a una request
+                        val request= Request.Builder()
+                            .url(urlEmail)
+                            .post(formBody)
+                            .build()
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                e.printStackTrace()
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                                    for ((name, value) in response.headers) {
+                                        println("$name: $value")
+                                    }
+                                    println(response.body!!.string())
+                                }
+                            }
+                        })
+
+
+                    }
+                    catch (e: Exception) {
+                        //si el crear el jsonobject falla se retorna que el Email puesto no esta en la BDD
+                        e.printStackTrace()
+                        countDownLatch.countDown()
+                        Toast.makeText(context, "Email already in use", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            }
+
+        })
+    }
     fun EstaEnBDD(context: Context,Nombre :String, Contraseña: String) : ResultadoPersona {
         //preparo la variable que va a retornar
         var resultadoPersona = ResultadoPersona()
 
 
+
         //preparo la querry para la base de datos con los datos extraidos
-         val query=String.format("SELECT * FROM `persona` WHERE `Nombre`='%S' and `Contraseña`='%S'", Nombre, Contraseña)
+         val query=String.format("SELECT * FROM `persona` WHERE `Nombre`='%s' ", Nombre)
         //genero un form con la query
         val formBody = FormBody.Builder()
             .add("sql", query)
@@ -128,116 +208,143 @@ class NivelDatabase(context: Context) {
                     val responseData = response.body!!.string()
                     println(responseData)
                     try { //se intenta crear un jsonobject a base de lo que hay en la base de datos
-                        val jsonObject = JSONObject(responseData)
-                        println(jsonObject)
-                        //si el usuario esta verificado
-                        if (jsonObject.optString("Verificacion")=="1") {
-                            //se modifica resultado persona con los datos
-                            resultadoPersona = ResultadoPersona(
-                                ID = jsonObject.getString("ID"),
-                                Nombre = jsonObject.getString("Nombre"),
-                                Contraseña = jsonObject.getString("Contraseña"),
-                                Apellido = jsonObject.getString("Apellido"),
-                                Edad = jsonObject.getString("Edad"),
-                                DNI = jsonObject.getString("DNI"),
-                                Email = jsonObject.getString("Email"),
+                        val jsonStrings = responseData.split("<br>")
+                        //se va atravez de los resultados
+                        for (jsonString in jsonStrings) {
 
-                                Locacion = jsonObject.optString("Locacion"),
-                                Telefono = jsonObject.optString("Telefono")
-                            )
-                            //de aqui se realiza una query para ver si es cadete o Usuario
-                            val query=String.format("SELECT * FROM `usuario` WHERE `ID_Persona`='%S'", resultadoPersona.ID)
-                            //genero la form con lo que estoy buscando
-                            val formBody = FormBody.Builder()
-                                .add("sql", query)
-
-                                .build()
-                            //transfomo la form a una request
-                            val request= Request.Builder()
-                                .url(url)
-                                .post(formBody)
-                                .build()
-                            //realizo la request con manejo de errores
-                            val countDownLatch2 = CountDownLatch(1)
-                            client.newCall(request).enqueue(object : Callback {
-
-
-
-
-                                override fun onFailure(call: Call, e: IOException) {
-
-                                    e.printStackTrace()
-                                    countDownLatch2.countDown();
+                            if (jsonString.isNotEmpty()) {
+                                //se crea un jsonobject con lo conseguido
+                                val jsonObject = JSONObject(jsonString)
+                                //se crea una variable de la contraseña hasheada
+                                var contraseñaHasheada=jsonObject.optString("Contraseña")
+                                //si inicia con el inicio del php se cambia al de android de esa manera ambos sistemas son compatibles
+                                if (contraseñaHasheada.startsWith("$2y$")) {
+                                     contraseñaHasheada =
+                                        contraseñaHasheada.replace("$2y$", "$2a$")
                                 }
-                                override fun onResponse(call: Call, response: Response) {
 
-                                    val responseData = response.body!!.string()
-                                    println(responseData)
-                                    try {
-                                        val jsonObject = JSONObject(responseData)
-                                        if (!jsonObject.optString("NombreUsuario")
-                                                .isNullOrEmpty()
-                                        ) {
-                                            resultadoPersona.UsuarioOCadete = "Usuario"
+
+
+                                //si el usuario esta verificado y si la contraseña dada es igual a la hasheada
+                                if (jsonObject.optString("Verificacion") == "1" && BCrypt.checkpw(
+                                        Contraseña,
+                                        contraseñaHasheada
+                                    )
+                                ) {
+                                    //se modifica resultado persona con los datos
+                                    resultadoPersona = ResultadoPersona(
+                                        ID = jsonObject.getString("ID"),
+                                        Nombre = jsonObject.getString("Nombre"),
+                                        Contraseña = jsonObject.getString("Contraseña"),
+                                        Apellido = jsonObject.getString("Apellido"),
+                                        Edad = jsonObject.getString("Edad"),
+                                        DNI = jsonObject.getString("DNI"),
+                                        Email = jsonObject.getString("Email"),
+
+                                        Locacion = jsonObject.optString("Locacion"),
+                                        Telefono = jsonObject.optString("Telefono")
+                                    )
+                                    //de aqui se realiza una query para ver si es cadete o Usuario
+                                    val query = String.format(
+                                        "SELECT * FROM `usuario` WHERE `ID_Persona`='%s'",
+                                        resultadoPersona.ID
+                                    )
+                                    //genero la form con lo que estoy buscando
+                                    val formBody = FormBody.Builder()
+                                        .add("sql", query)
+
+                                        .build()
+                                    //transfomo la form a una request
+                                    val request = Request.Builder()
+                                        .url(url)
+                                        .post(formBody)
+                                        .build()
+                                    //realizo la request con manejo de errores
+                                    val countDownLatch2 = CountDownLatch(1)
+                                    client.newCall(request).enqueue(object : Callback {
+
+
+                                        override fun onFailure(call: Call, e: IOException) {
+
+                                            e.printStackTrace()
+                                            countDownLatch2.countDown();
                                         }
-                                    }
-                                    catch (e: Exception) {
-                                        e.printStackTrace()
 
-                                    }
-                                    countDownLatch2.countDown();
+                                        override fun onResponse(call: Call, response: Response) {
 
+                                            val responseData = response.body!!.string()
+                                            println(responseData)
+                                            try {
+                                                val jsonObject = JSONObject(responseData)
+                                                if (!jsonObject.optString("NombreUsuario")
+                                                        .isNullOrEmpty()
+                                                ) {
+                                                    resultadoPersona.UsuarioOCadete = "Usuario"
+                                                }
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+
+                                            }
+                                            countDownLatch2.countDown();
+
+                                        }
+                                    })
+                                    countDownLatch2.await()
+                                    val query2 = String.format(
+                                        "SELECT * FROM `cadete` WHERE `ID_Persona`='%s'",
+                                        resultadoPersona.ID
+                                    )
+                                    //genero la form con lo que estoy buscando
+                                    val formBody2 = FormBody.Builder()
+                                        .add("sql", query2)
+
+                                        .build()
+                                    //transfomo la form a una request
+                                    val request2 = Request.Builder()
+                                        .url(url)
+                                        .post(formBody2)
+                                        .build()
+                                    val countDownLatch3 = CountDownLatch(1)
+                                    client.newCall(request2).enqueue(object : Callback {
+
+
+                                        override fun onFailure(call: Call, e: IOException) {
+
+                                            e.printStackTrace()
+                                            countDownLatch3.countDown();
+                                        }
+
+                                        override fun onResponse(call: Call, response: Response) {
+
+                                            val responseData = response.body!!.string()
+                                            println(responseData)
+                                            try {
+                                                val jsonObject = JSONObject(responseData)
+                                                if (!jsonObject.optString("NombreUsuario")
+                                                        .isNullOrEmpty()
+                                                ) {
+                                                    resultadoPersona.UsuarioOCadete = "Cadete"
+                                                }
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+
+                                            }
+                                            countDownLatch3.countDown();
+
+                                        }
+
+                                    })
+                                    countDownLatch3.await()
+                                }
                             }
-                            })
-                            countDownLatch2.await()
-                            val query2=String.format("SELECT * FROM `cadete` WHERE `ID_Persona`='%S'", resultadoPersona.ID)
-                            //genero la form con lo que estoy buscando
-                            val formBody2 = FormBody.Builder()
-                                .add("sql", query2)
-
-                                .build()
-                            //transfomo la form a una request
-                            val request2= Request.Builder()
-                                .url(url)
-                                .post(formBody2)
-                                .build()
-                            val countDownLatch3 = CountDownLatch(1)
-                            client.newCall(request2).enqueue(object : Callback {
-
-
-
-
-                                override fun onFailure(call: Call, e: IOException) {
-
-                                    e.printStackTrace()
-                                    countDownLatch3.countDown();
-                                }
-                                override fun onResponse(call: Call, response: Response) {
-
-                                    val responseData = response.body!!.string()
-                                    println(responseData)
-                                    try {
-                                        val jsonObject = JSONObject(responseData)
-                                        if (!jsonObject.optString("NombreUsuario")
-                                                .isNullOrEmpty()
-                                        ) {
-                                            resultadoPersona.UsuarioOCadete = "Cadete"
-                                        }
-                                    }
-                                    catch (e: Exception) {
-                                        e.printStackTrace()
-
-                                    }
-                                    countDownLatch3.countDown();
-
-                                }
-
-                            })
-                            countDownLatch3.await()
-
                         }
+
+
+
+
                         countDownLatch.countDown()
                     }
+
 
 
 
@@ -245,7 +352,12 @@ class NivelDatabase(context: Context) {
                     catch (e: Exception) {
                         //si el crear el jsonobject falla se retorna un ResultadoPersona vacio
                         e.printStackTrace()
+                        (context as MainActivity).runOnUiThread {
+                            Toast.makeText(context, "invalido usuario o contraseña", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                         countDownLatch.countDown()
+
                     }
 
 
@@ -281,9 +393,9 @@ class NivelDatabase(context: Context) {
 
 
 
-        //genero la query de sql
+        //genero la query de sql con la contraseña hasheada
         val query=String.format("INSERT INTO `persona`( `Nombre`, `Contraseña`, `Apellido`, `Edad`, `DNI`, `Email`) " +
-                "VALUES ('%S','%S','%S','%S','%S','%S')", Nombre, Contraseña, Apellido, Edad, DNI, Email)
+                "VALUES ('%s','%s','%s','%s','%s','%s')", Nombre, BCrypt.hashpw(Contraseña,BCrypt.gensalt()), Apellido, Edad, DNI, Email)
         //genero la form con lo que estoy buscando
         val formBody = FormBody.Builder()
             .add("sql", query)
@@ -323,7 +435,7 @@ class NivelDatabase(context: Context) {
                         println(insertedID)
                         //se realiza otro insert con insertedID como clave foranea para usuario o cadete dependiendo lo decidido por el usuario
                         if (EsUsuario== true){
-                            val query= String.format( "INSERT INTO `usuario`( `ID_Persona`, `NombreUsuario`) VALUES ('%S','%S')", insertedID, Nombre)
+                            val query= String.format( "INSERT INTO `usuario`( `ID_Persona`, `NombreUsuario`) VALUES ('%s','%s')", insertedID, Nombre)
                             val formBody = FormBody.Builder()
                                 .add("sql", query)
 
@@ -355,7 +467,7 @@ class NivelDatabase(context: Context) {
 
                         else{
 
-                            val query= String.format("INSERT INTO `cadete`( `ID_Persona`, `NombreUsuario`) VALUES ('%S','%S')", insertedID, Nombre)
+                            val query= String.format("INSERT INTO `cadete`( `ID_Persona`, `NombreUsuario`) VALUES ('%s','%s')", insertedID, Nombre)
                             val formBody = FormBody.Builder()
                                 .add("sql", query)
 
@@ -383,6 +495,34 @@ class NivelDatabase(context: Context) {
                             })
 
                         }
+                        //despues que se añana a la BDD se mandara un mail de Verificacion
+                        val formBody = FormBody.Builder()
+                            .add("email", Email)
+                            .add("subject", "Email de verificacion")
+                            .add("link", urlVerif)
+
+                            .build()
+                        //transfomo la form a una request
+                        val request= Request.Builder()
+                            .url(urlEmail)
+                            .post(formBody)
+                            .build()
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                e.printStackTrace()
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                                    for ((name, value) in response.headers) {
+                                        println("$name: $value")
+                                    }
+                                    println(response.body!!.string())
+                                }
+                            }
+                        })
 
                     }
                     else{
@@ -392,6 +532,7 @@ class NivelDatabase(context: Context) {
 
                         }
                     }
+
 
 
                 }
