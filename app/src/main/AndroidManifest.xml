@@ -21,7 +21,6 @@
         <activity
             android:name=".RecuperarContrasenia"
             android:exported="false" />
-
         <activity
             android:name="Solicitud_Entrega.Solicitud_Envio"
             android:exported="false" />
