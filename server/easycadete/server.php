@@ -14,10 +14,10 @@ if ($conn->connect_error) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = $_POST['sql'];
-
-
-
-
+    
+    
+   
+    
     if (stripos($sql, "SELECT") === 0) {
         $result = $conn->query($sql);
 
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (stripos($sql, "INSERT") === 0) {
                 // Get the ID of the inserted record
                 $last_id = $conn->insert_id;
-                echo "Query successful. Last inserted ID is: " . $last_id;
+                echo $last_id;
             } else {
                 echo "Query successful.";
             }

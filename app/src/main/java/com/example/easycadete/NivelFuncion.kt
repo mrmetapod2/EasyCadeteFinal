@@ -42,11 +42,77 @@ class NivelFuncion {
         }
 
     }
-    fun RegistrarUsuarios(context: Context,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String,EsUsuario: Boolean){
+    fun RegistrarUsuarios(context: Context,Nombre :String, Contraseña: String,Apellido:String,Edad:String,Email: String,DNI:String,EsUsuario: Boolean){
         println(EsUsuario)
-        val nivelDatabase = NivelDatabase(context)
-        val result = nivelDatabase.AñadirABDD(context, Nombre, Contraseña,Apellido,Edad,Email,DNI,EsUsuario);
-        println(result)
+        //chequeo si contraseña es valida
+        if (EsContraseñaValida(Contraseña)){
+            //chequeo si edad es un numero
+            if (Edad.toDoubleOrNull()!=null) {
+                //chequeo si edad es un numero valido
+                val numeroEdad= Edad.toInt()
+                if(numeroEdad in 14..119){
+                    //chequeo si dni es valido
+                    println(DNI.length)
+                    println(DNI)
+                    if (DNI.length ==8 && DNI.toDoubleOrNull()!=null) {
+                        //chequeo si el email es un email
+                        if(android.util.Patterns.EMAIL_ADDRESS.matcher(Email).matches()){
+                            val nivelDatabase = NivelDatabase(context)
+                            val result = nivelDatabase.AñadirABDD(
+                                context,
+                                Nombre,
+                                Contraseña,
+                                Apellido,
+                                Edad,
+                                DNI,
+                                Email,
+                                EsUsuario
+                            );
+                            println(result)
+                        }
+                        else{
+                            Toast.makeText(context, "Email no es valido", Toast.LENGTH_SHORT).show()
+                        }
+
+
+                    }
+                    else{
+                        Toast.makeText(context, "DNI no es valido", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                else{
+                    Toast.makeText(context, "Edad no es un numero valido", Toast.LENGTH_SHORT).show()
+                }
+            }
+            else{
+                Toast.makeText(context, "Edad no es un numero", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+        else{
+            Toast.makeText(context, "Contraseña no cumple con los requerimientos", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+    //funcion para ver si una contraseña es valida
+     fun EsContraseñaValida(password: String): Boolean {
+         //chequea si tiene una letra en mayuscula
+        val uppercasePattern = Regex(".*[A-Z].*")
+        //una minuscula
+        val lowercasePattern = Regex(".*[a-z].*")
+        //algun numero
+        val digitPattern = Regex(".*[0-9].*")
+        //algun character especial
+        val specialCharPattern = Regex(".*[!@#\$%^&*(),.?\":{}|<>].*")
+        //y si es mas largo que 8
+        val minLength = 8
+
+        return password.length > minLength &&
+                uppercasePattern.containsMatchIn(password) &&
+                lowercasePattern.containsMatchIn(password) &&
+                digitPattern.containsMatchIn(password) &&
+                specialCharPattern.containsMatchIn(password)
     }
 
     //esta funcion se va a encargar de la asignacion de cadetes porfa llamala cuando se tengan que asignar en el proceso de relizar un pedido
