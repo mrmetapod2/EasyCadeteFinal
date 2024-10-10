@@ -28,7 +28,7 @@
             android:name="Solicitud_Entrega.Solicitud_Envio"
             android:exported="false" />
         <activity android:name="Cancelar_Entrega.Reembolso" />
-        <activity android:name=".MainActivity" />
+
         <activity
             android:name=".RecuperarContrasenia"
             android:exported="false" />
@@ -39,15 +39,14 @@
         <activity
             android:name=".PantallaCadete"
             android:exported="false" />
-        <!--
-<activity
+
+        <activity
             android:name=".PantallaUsuario"
             android:exported="false" />
-        -->
         <activity android:name="Solicitud_Entrega.Paquete" />
         <activity android:name="Solicitud_Entrega.Solicitud_Cadete" />
         <activity
-            android:name=".PantallaUsuario"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
