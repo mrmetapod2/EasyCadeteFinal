@@ -6,10 +6,11 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.widget.Toast
+
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.FormBody
-import okhttp3.OkHttpClient
+
 import okhttp3.Request
 import okhttp3.Response
 
@@ -86,10 +87,10 @@ class NivelDatabase(context: Context) {
     private lateinit  var baseDeDatos : BaseDeDatos
 
     //CUANDO TRABAJES EN ESTO REEMPLAZA CON TU IP
-    val IP="192.168.0.2"
+    val IP="192.168.1.1"
     //url para la base de datos
     val url= String.format("http://%S/easycadete/server.php",IP)
-    val client = OkHttpClient()
+    val client = okhttp3.OkHttpClient()
     val urlEmail=String.format("http://%S/easycadete/sendEmail.php",IP)
     val urlVerif=String.format("http://%S/easycadete/verify.php",IP)
     val urlPass=String.format("http://%S/easycadete/newPassword.php",IP)

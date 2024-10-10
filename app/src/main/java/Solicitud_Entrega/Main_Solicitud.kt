@@ -41,7 +41,6 @@ class Main_Solicitud : AppCompatActivity() {
         textDestl = findViewById(R.id.textdestl)/////
         card2 = findViewById(R.id.cardView2)
 
-
         btnOrigen.setOnClickListener {
             val intent = Intent(this, Solicitud_Envio::class.java)
             startActivityForResult(intent, REQUEST_CODE_ORIGEN)
