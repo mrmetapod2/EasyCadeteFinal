@@ -51,7 +51,7 @@ class  Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
 
     private lateinit var map:GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var  guardar:Button
+    private lateinit var guardar:Button
     private lateinit var currentLocationButton: Button
     private lateinit var tvFrom: TextView
 
@@ -171,12 +171,6 @@ class  Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
         mMarkerFrom?.remove()
         mMarkerFrom = addMarker(latLng,getString(R.string.marker_title_from))
     }
-
-
-
-
-
-
 
 
     private fun createFragment(){

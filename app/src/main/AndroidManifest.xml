@@ -19,17 +19,19 @@
         android:theme="@style/Theme.EasyCadete"
         tools:targetApi="31">
         <activity
-            android:name="Cancelar_Entrega.Cancelar_Entrega"
+            android:name=".Confirmacion_Entrega"
             android:exported="false" />
         <activity
-            android:name=".RecuperarContrasenia"
+            android:name="Cancelar_Entrega.Cancelar_Entrega"
             android:exported="false" />
         <activity
             android:name="Solicitud_Entrega.Solicitud_Envio"
             android:exported="false" />
+        <activity android:name="Cancelar_Entrega.Reembolso" />
         <activity android:name=".MainActivity" />
-
-
+        <activity
+            android:name=".RecuperarContrasenia"
+            android:exported="false" />
         <activity android:name="Solicitud_Entrega.Main_Solicitud" />
         <activity
             android:name=".Registrar"
@@ -37,13 +39,15 @@
         <activity
             android:name=".PantallaCadete"
             android:exported="false" />
-        <activity
+        <!--
+<activity
             android:name=".PantallaUsuario"
             android:exported="false" />
+        -->
         <activity android:name="Solicitud_Entrega.Paquete" />
         <activity android:name="Solicitud_Entrega.Solicitud_Cadete" />
         <activity
-            android:name="Cancelar_Entrega.Reembolso"
+            android:name=".PantallaUsuario"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,5 +1,6 @@
 package Solicitud_Entrega
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -33,13 +34,14 @@ class Paquete : AppCompatActivity() {
             val alto = editAlto.text.toString()
             val peso = editPeso.text.toString()
 
-            val intent = Intent(this, Main_Solicitud::class.java).apply {
+            val resultIntent = Intent().apply {
                 putExtra("LARGO", largo)
                 putExtra("ANCHO", ancho)
                 putExtra("ALTO", alto)
                 putExtra("PESO", peso)
             }
-            startActivity(intent)
+            setResult(Activity.RESULT_OK, resultIntent)
+            finish()
         }
     }
 }

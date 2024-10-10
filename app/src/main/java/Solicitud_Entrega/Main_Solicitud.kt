@@ -6,11 +6,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.easycadete.PantallaUsuario
 import com.example.easycadete.R
 
 class Main_Solicitud : AppCompatActivity() {
@@ -20,10 +22,12 @@ class Main_Solicitud : AppCompatActivity() {
     private lateinit var btnOrigen: Button
     private lateinit var btnDest: Button
     private lateinit var btnpaquete: Button
+    private lateinit var btnENVIO: Button
     private lateinit var card2: CardView
 
     private val REQUEST_CODE_ORIGEN = 1
     private val REQUEST_CODE_DEST = 2
+    private val REQUEST_CODE_PAQUETE = 3
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,9 +41,34 @@ class Main_Solicitud : AppCompatActivity() {
         btnOrigen = findViewById(R.id.btnorigen)
         textDest = findViewById(R.id.textdest)
         btnDest = findViewById(R.id.btndest)
-        btnpaquete = findViewById(R.id.btnpaquete)/////
-        textDestl = findViewById(R.id.textdestl)/////
+        btnpaquete = findViewById(R.id.btnpaquete)
+        textDestl = findViewById(R.id.textdestl)
         card2 = findViewById(R.id.cardView2)
+
+        btnENVIO = findViewById(R.id.btnenvio)
+
+        btnENVIO.setOnClickListener {
+
+            //Levantamos todos los datos y los enviamos a la pantalla de usuario
+            val origen = textOrigen.text.toString()
+            val destino = textDest.text.toString()
+            val medidasPaquete = textDestl.text.toString()
+
+            // Validar que los campos no estén vacíos
+            if (origen.isNotEmpty() && destino.isNotEmpty() && medidasPaquete.isNotEmpty()) {
+                // Crear el intent para enviar los datos a la otra actividad
+                val intent = Intent(this, PantallaUsuario::class.java).apply {
+                    putExtra("ORIGEN", origen)
+                    putExtra("DESTINO", destino)
+                    putExtra("PAQUETE", medidasPaquete)
+                }
+                startActivity(intent) // Iniciar la otra actividad con los datos
+            } else {
+                // Mostrar un mensaje de error si algún campo está vacío
+                Toast.makeText(this, "Por favor, completa todos los campos antes de enviar.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
         btnOrigen.setOnClickListener {
             val intent = Intent(this, Solicitud_Envio::class.java)
@@ -52,16 +81,9 @@ class Main_Solicitud : AppCompatActivity() {
         }
         btnpaquete.setOnClickListener {
             val intent = Intent(this, Paquete::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, REQUEST_CODE_PAQUETE)
         }
-        val largo = intent.getStringExtra("LARGO")
-        val ancho = intent.getStringExtra("ANCHO")
-        val alto = intent.getStringExtra("ALTO")
-        val peso = intent.getStringExtra("PESO")
 
-        if (largo != null && ancho != null && alto != null && peso != null) {
-            textDestl.text = "Medidas del paquete:\nLargo: $largo cm\nAncho: $ancho cm\nAlto: $alto cm\nPeso: $peso kg"
-        }
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -75,6 +97,20 @@ class Main_Solicitud : AppCompatActivity() {
                     }
                 }
                 REQUEST_CODE_DEST -> textDest.text = returnValue
+
+
+                REQUEST_CODE_PAQUETE ->{
+                    val largo = data.getStringExtra("LARGO")
+                    val ancho = data.getStringExtra("ANCHO")
+                    val alto = data.getStringExtra("ALTO")
+                    val peso = data.getStringExtra("PESO")
+
+                    if (largo != null && ancho != null && alto != null && peso != null) {
+                        textDestl.text = "Medidas del paquete:\nLargo: $largo cm\nAncho: $ancho cm\nAlto: $alto cm\nPeso: $peso kg"
+                    }else {
+                        textDestl.text = "No se recibieron todas las medidas del paquete."
+                    }
+                }
             }
         }
     }
