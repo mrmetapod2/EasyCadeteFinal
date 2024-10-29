@@ -24,13 +24,18 @@ class NivelFuncion {
         println(result)
         if (result.UsuarioOCadete== "Usuario"){
             val i =Intent(context, PantallaUsuario::class.java)
+            //añado el resultado al futuro
+            i.putExtra("result",result)
             startActivity(context,i,null)
+
             //println(result)
             //Toast.makeText(this, "usuario", Toast.LENGTH_LONG).show()
 
         }
         else if (result.UsuarioOCadete== "Cadete"){
             val i =Intent(context, PantallaCadete::class.java)
+            //añado el resultado al futuro
+            i.putExtra("result",result)
             startActivity(context,i,null)
             //println(result)
             //Toast.makeText(this, "Cadete", Toast.LENGTH_LONG).show()
@@ -42,7 +47,7 @@ class NivelFuncion {
         }
 
     }
-    fun RegistrarUsuarios(context: Context,Nombre :String, Contraseña: String,Apellido:String,Edad:String,Email: String,DNI:String,EsUsuario: Boolean){
+    fun RegistrarUsuarios(context: Context,Nombre :String, Contraseña: String,Apellido:String,Edad:String,Email: String,DNI:String,EsUsuario: Boolean, Latitud:Double, Longitud:Double){
         println(EsUsuario)
         //chequeo si contraseña es valida
         if (EsContraseñaValida(Contraseña)){
@@ -54,21 +59,25 @@ class NivelFuncion {
                     //chequeo si dni es valido
                     println(DNI.length)
                     println(DNI)
-                    if (DNI.length ==8 && DNI.toDoubleOrNull()!=null) {
+                    if (DNI.length in 7..9 && DNI.toDoubleOrNull()!=null) {
                         //chequeo si el email es un email
                         if(android.util.Patterns.EMAIL_ADDRESS.matcher(Email).matches()){
-                            val nivelDatabase = NivelDatabase(context)
-                            val result = nivelDatabase.AñadirABDD(
-                                context,
-                                Nombre,
-                                Contraseña,
-                                Apellido,
-                                Edad,
-                                DNI,
-                                Email,
-                                EsUsuario
-                            );
-                            println(result)
+                            if(Latitud!=null &&Longitud!=null){
+                                val nivelDatabase = NivelDatabase(context)
+                                val result = nivelDatabase.AñadirABDD(
+                                    context,
+                                    Nombre,
+                                    Contraseña,
+                                    Apellido,
+                                    Edad,
+                                    DNI,
+                                    Email,
+                                    EsUsuario,
+                                    Latitud,
+                                    Longitud
+                                );
+                                println(result)
+                            }
                         }
                         else{
                             Toast.makeText(context, "Email no es valido", Toast.LENGTH_SHORT).show()

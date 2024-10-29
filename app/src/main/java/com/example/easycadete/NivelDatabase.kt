@@ -87,7 +87,7 @@ class NivelDatabase(context: Context) {
     private lateinit  var baseDeDatos : BaseDeDatos
 
     //CUANDO TRABAJES EN ESTO REEMPLAZA CON TU IP
-    val IP="192.168.1.1"
+    val IP="192.168.0.2"
     //url para la base de datos
     val url= String.format("http://%S/easycadete/server.php",IP)
     val client = okhttp3.OkHttpClient()
@@ -242,10 +242,13 @@ class NivelDatabase(context: Context) {
                                         DNI = jsonObject.getString("DNI"),
                                         Email = jsonObject.getString("Email"),
 
-                                        Locacion = jsonObject.optString("Locacion"),
-                                        Telefono = jsonObject.optString("Telefono")
+
+                                        Telefono = jsonObject.optString("Telefono"),
+                                        Latitud = jsonObject.optString("Latitud"),
+                                        Longitud = jsonObject.optString("Longitud")
                                     )
                                     //de aqui se realiza una query para ver si es cadete o Usuario
+                                    println(resultadoPersona)
                                     val query = String.format(
                                         "SELECT * FROM `usuario` WHERE `ID_Persona`='%s'",
                                         resultadoPersona.ID
@@ -387,7 +390,7 @@ class NivelDatabase(context: Context) {
 
     }
 
-    fun AñadirABDD(context: Context ,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String, EsUsuario: Boolean){
+    fun AñadirABDD(context: Context ,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String, EsUsuario: Boolean, Latitud:Double, Longitud:Double){
         //variable establecida para saber donde esta la nueva persona
         var insertedID=0;
 
@@ -395,8 +398,8 @@ class NivelDatabase(context: Context) {
 
 
         //genero la query de sql con la contraseña hasheada
-        val query=String.format("INSERT INTO `persona`( `Nombre`, `Contraseña`, `Apellido`, `Edad`, `DNI`, `Email`) " +
-                "VALUES ('%s','%s','%s','%s','%s','%s')", Nombre, BCrypt.hashpw(Contraseña,BCrypt.gensalt()), Apellido, Edad, DNI, Email)
+        val query=String.format("INSERT INTO `persona`( `Nombre`, `Contraseña`, `Apellido`, `Edad`, `DNI`, `Email`, `Latitud`, `Longitud`) " +
+                "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')", Nombre, BCrypt.hashpw(Contraseña,BCrypt.gensalt()), Apellido, Edad, DNI, Email,Latitud,Longitud)
         //genero la form con lo que estoy buscando
         val formBody = FormBody.Builder()
             .add("sql", query)
@@ -436,7 +439,7 @@ class NivelDatabase(context: Context) {
                         println(insertedID)
                         //se realiza otro insert con insertedID como clave foranea para usuario o cadete dependiendo lo decidido por el usuario
                         if (EsUsuario== true){
-                            val query= String.format( "INSERT INTO `usuario`( `ID_Persona`, `NombreUsuario`) VALUES ('%s','%s')", insertedID, Nombre)
+                            val query= String.format( "INSERT INTO `usuario`( `ID_Persona`, `NombreUsuario`) VALUES ('%s','%s')", insertedID, Email)
                             val formBody = FormBody.Builder()
                                 .add("sql", query)
 
@@ -610,8 +613,10 @@ class NivelDatabase(context: Context) {
                     DNI = jsonObject.getString("DNI"),
                     Email = jsonObject.getString("Email"),
 
-                    Locacion = jsonObject.optString("Locacion"),
+
                     Telefono = jsonObject.optString("Telefono"),
+                    Latitud = jsonObject.optString("Latitud"),
+                    Longitud = jsonObject.optString("Longitud"),
                     //el resultado siempre va a ser cadetes porque sale de la tabla de cadetes
                     UsuarioOCadete = "Cadete"
                 )

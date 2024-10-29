@@ -16,6 +16,8 @@ import androidx.core.view.WindowInsetsCompat
 class PantallaUsuario : AppCompatActivity() {
     private lateinit var calificacionbtn: Button
     private lateinit var NenvioBTN: Button
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -27,9 +29,12 @@ class PantallaUsuario : AppCompatActivity() {
 
         }
         val PedidoBut= findViewById<Button>(R.id.button4)
-
+        //genero una variable con los datos del usuario
+        val Datos = intent.getParcelableExtra<ResultadoPersona>("result")
         PedidoBut.setOnClickListener {
             val i = Intent(this, Solicitud_Cadete::class.java)
+            //los mando a la proxima actividad por si a caso son utiles
+            i.putExtra("result",Datos)
             ContextCompat.startActivity(this, i, null)
         }
 
@@ -43,8 +48,15 @@ class PantallaUsuario : AppCompatActivity() {
         NenvioBTN = findViewById(R.id.Nenviobtn)
         NenvioBTN.setOnClickListener {
             val intent = Intent(this, Main_Solicitud::class.java)
+            intent.putExtra("result",Datos)
             startActivity(intent)
 
+        }
+        val DatosBut= findViewById<Button>(R.id.button7)
+        DatosBut.setOnClickListener(){
+            val intent = Intent(this, MostrarDatos::class.java)
+            intent.putExtra("result",Datos)
+            startActivity(intent)
         }
 
     }

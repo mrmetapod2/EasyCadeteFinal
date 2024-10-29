@@ -54,7 +54,7 @@ class  Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
     private lateinit var guardar:Button
     private lateinit var currentLocationButton: Button
     private lateinit var tvFrom: TextView
-
+    private lateinit var hardLocation: DoubleArray
 
     private lateinit var mFromLatLng: LatLng
 
@@ -90,8 +90,12 @@ class  Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
         guardar.setOnClickListener{
             // Dentro del método donde guardas los datos y cierras el segundo Activity
             val resultIntent = Intent()
+
             resultIntent.putExtra("returnValue", tvFrom.text.toString()) // Coloca aquí el valor que quieres enviar de vuelta
+            resultIntent.putExtra("hardLocation",hardLocation)
+
             setResult(Activity.RESULT_OK, resultIntent)
+
             finish()
 
         }
@@ -195,10 +199,12 @@ class  Solicitud_Envio : AppCompatActivity() , OnMapReadyCallback {
         val geocoder = Geocoder(this)
         try {
             val addresses: List<Address>? = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
                 val addressText = "${address.thoroughfare}, ${address.subThoroughfare}, ${address.locality}"
                 tvFrom.text = addressText
+                hardLocation=(listOf(latLng.latitude, latLng.longitude).toDoubleArray())
             }
         } catch (e: IOException) {
             e.printStackTrace()
