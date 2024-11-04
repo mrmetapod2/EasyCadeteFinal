@@ -59,5 +59,12 @@ class PantallaUsuario : AppCompatActivity() {
             startActivity(intent)
         }
 
+        val ModifBut=findViewById<Button>(R.id.button8)
+        DatosBut.setOnClickListener(){
+            val intent = Intent(this, ModificarDatos::class.java)
+            intent.putExtra("result",Datos)
+            startActivity(intent)
+        }
+
     }
 }

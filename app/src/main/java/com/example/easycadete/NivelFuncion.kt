@@ -6,6 +6,22 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
 
 class NivelFuncion {
+    inner class ModificarUsuarios(
+        context: Context,
+        Nombre: String,
+        Contraseña: String,
+        Apellido: String,
+        Edad: String,
+        Email: String,
+        DNI: String,
+        EsUsuario: Boolean,
+        latitud: Double,
+        longitud: Double
+    ) {
+
+
+    }
+
     fun EnviarEmail(context: Context, Email: String){
         val nivelDatabase= NivelDatabase(context)
         //esto chequea si lo que pusiste en el texto es un EMAIL
