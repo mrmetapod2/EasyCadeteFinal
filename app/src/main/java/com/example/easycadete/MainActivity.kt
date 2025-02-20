@@ -12,7 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var dbHelper: BaseDeDatos
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         val RegistrarBut= findViewById<Button>(R.id.button3)
         val ContraseñaBut= findViewById<Button>(R.id.button6)
         val nivelFuncion = NivelFuncion()
-        dbHelper = BaseDeDatos(this)
+
 
 
 

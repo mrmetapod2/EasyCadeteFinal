@@ -1,10 +1,7 @@
 package com.example.easycadete
 
 
-import android.R.attr.duration
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
 import android.widget.Toast
 
 import okhttp3.Call
@@ -22,69 +19,11 @@ import java.util.concurrent.CountDownLatch
 
 
 //uso esta clase para armar un esqueleto de una base de datos para las pruebas
-class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION)
-    {
-        companion object {
-            //esto va a ser modificado para que sea exactamente la base de datos que usemos
-         const val DATABASE_NAME = "example.db"
-         const val DATABASE_VERSION = 5
-         const val TABLE_NAME = "Persona"
-            const val COLUMN_ID="ID"
 
-            const val USUARIO_TABLE_NAME= "Usuario"
-            const val CADETE_TABLE_NAME= "Cadete"
-
-
-            //estas son las tablas actuales de la base de datos
-        private const val PERSONA_TABLE =
-            /*"CREATE TABLE $TABLE_NAME (" +
-                    "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "$COLUMN_NAME TEXT NOT NULL," +
-                    "$CADETE_O_USUARIO TEXT NOT NULL," +
-                    "$COLUMN_CONT TEXT NOT NULL) "*/
-            "CREATE TABLE $TABLE_NAME (" +
-                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "Nombre VARCHAR(100) NOT NULL," +
-                    "Apellido VARCHAR(100) NOT NULL," +
-                    "Contraseña VARCHAR(100) NOT NULL," +
-                    "Edad INTEGER NOT NULL," +
-                    "DNI VARCHAR(20) NOT NULL," +
-                    "Email VARCHAR(100) NOT NULL," +
-                    "Telefono VARCHAR(20))"
-        private const val USUARIO_TABLE =
-            "CREATE TABLE $USUARIO_TABLE_NAME (" +
-                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "ID_Persona INTEGER NOT NULL," +
-                    "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
-                    ")"
-        private const val CADETE_TABLE =
-            "CREATE TABLE $CADETE_TABLE_NAME (" +
-                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "ID_Persona INTEGER NOT NULL," +
-                    "Disponibilidad BOOLEAN DEFAULT 1," +
-                    "FOREIGN KEY (ID_Persona) REFERENCES Persona(ID)" +
-                    ")"
-
-
-    }
-        //maneje de versiones
-        override fun onCreate(db: SQLiteDatabase) {
-
-            db.execSQL(PERSONA_TABLE)
-            db.execSQL(USUARIO_TABLE)
-            db.execSQL(CADETE_TABLE)
-
-        }
-
-        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            db.execSQL("DROP TABLE IF EXISTS $TABLE_NAME")
-            onCreate(db)
-        }
-
-}
 class NivelDatabase(context: Context) {
+
     //conecto a la base de datos
-    private lateinit  var baseDeDatos : BaseDeDatos
+
 
     //CUANDO TRABAJES EN ESTO REEMPLAZA CON TU IP
     val IP="192.168.0.2"
@@ -95,6 +34,86 @@ class NivelDatabase(context: Context) {
     val urlVerif=String.format("http://%S/easycadete/verify.php",IP)
     val urlPass=String.format("http://%S/easycadete/newPassword.php",IP)
 
+
+    fun AsignarPedidos(context: Context) : List<ResultadoSolicitud> {
+        //creo la lista de output
+        val SolicitudesDisponibles = mutableListOf<ResultadoSolicitud>()
+        //armo una variable que tendra los resultados de la query
+        var responseText=""
+        //genero la query de sql
+        val query="SELECT s.ID AS ID, s.ID_Usuario AS IdUsuario, s.ID_Cadete AS IdCadete, s.ID_Paquete AS IdPaquete, p.Peso AS PaquetePeso, p.Largo AS PaqueteLargo, p.Ancho AS PaqueteAncho, p.Alto AS PaqueteAlto, e.Estado AS Estado, s.ID_Estado AS IdEstado, s.Fecha AS FechaCreacion, s.FechaFin AS FechaFinalizacion, s.ImporteTotal AS Importe, s.LatitudIni AS LatitudIni, s.LongitudIni AS LongitudIni, s.LatitudFin AS LatitudFin, s.LongitudFin AS LongitudFin FROM easycadete.solicitud s JOIN easycadete.paquete p ON s.ID_Paquete = p.ID JOIN easycadete.estado e ON s.ID_Estado = e.ID;"
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //creo un countdown para esperar al server
+        val countDownLatch = CountDownLatch(1)
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    responseText = response.body!!.string()
+                    countDownLatch.countDown()
+                }
+            }
+        })
+        //espero hasta que toda la logica del servidor este completada
+        countDownLatch.await()
+        println("lalalan")
+        println(responseText)
+
+
+        // corto el input a una serie de strings con cada respuesta
+        val jsonStrings = responseText.split("<br>")
+        // creo la lista de json donde va a ir la info
+        val jsonObjects = mutableListOf<JSONObject>()
+
+        // voy por las strings y las convierto en jsonobjects
+        for (jsonString in jsonStrings) {
+            if (jsonString.isNotEmpty()) {
+                val jsonObject = JSONObject(jsonString)
+                // cuando ya son JSONobject lo añado a los resultados
+                val resultadoSolicitud = ResultadoSolicitud(
+                    ID = jsonObject.getString("ID"),
+
+                    IdUsuario = jsonObject.getString("IdUsuario"),
+                    IdCadete = jsonObject.getString("IdCadete"),
+                    IdPaquete = jsonObject.getString("IdPaquete"),
+                    PaquetePeso = jsonObject.getString("PaquetePeso"),
+                    PaqueteLargo = jsonObject.getString("PaqueteLargo"),
+                    PaqueteAncho = jsonObject.getString("PaqueteAncho"),
+                    PaqueteAlto = jsonObject.getString("PaqueteAlto"),
+                    Estado = jsonObject.getString("Estado"),
+                    IdEstado = jsonObject.getString("IdEstado"),
+                    FechaCreacion = jsonObject.getString("FechaCreacion"),
+                    FechaFinalizacion = jsonObject.getString("FechaFinalizacion"),
+                    Importe = jsonObject.getString("Importe"),
+                    LatitudIni = jsonObject.getString("LatitudIni"),
+                    LongitudIni = jsonObject.getString("LongitudIni"),
+                    LatitudFin = jsonObject.getString("LatitudFin"),
+                    LongitudFin = jsonObject.getString("LongitudFin")
+
+                )
+                SolicitudesDisponibles.add(resultadoSolicitud)
+            }
+        }
+        return SolicitudesDisponibles
+    }
 
     fun EnviarRecuperacion(context: Context, Email: String){
         //preparo la querry para la base de datos con los datos extraidos
@@ -283,6 +302,7 @@ class NivelDatabase(context: Context) {
                                                 if (!jsonObject.optString("NombreUsuario")
                                                         .isNullOrEmpty()
                                                 ) {
+                                                    resultadoPersona.IDCadUsu= jsonObject.getString("ID")
                                                     resultadoPersona.UsuarioOCadete = "Usuario"
                                                 }
                                             } catch (e: Exception) {
@@ -327,6 +347,7 @@ class NivelDatabase(context: Context) {
                                                 if (!jsonObject.optString("NombreUsuario")
                                                         .isNullOrEmpty()
                                                 ) {
+                                                    resultadoPersona.IDCadUsu= jsonObject.getString("ID")
                                                     resultadoPersona.UsuarioOCadete = "Cadete"
                                                 }
                                             } catch (e: Exception) {
@@ -556,7 +577,7 @@ class NivelDatabase(context: Context) {
         //armo una variable que tendra los resultados de la query
         var responseText=""
         //genero la query de sql
-        val query="SELECT cadete.Disponibilidad, persona.ID, persona.Locacion, persona.Nombre, persona.Contraseña, persona.Apellido, persona.Edad, persona.DNI, persona.Email FROM persona, cadete WHERE cadete.ID_Persona = persona.ID AND persona.Verificacion=1 AND cadete.Disponibilidad=1;"
+        val query="SELECT cadete.Disponibilidad, persona.ID, persona.Latitud,persona.Longitud, persona.Nombre, persona.Contraseña, persona.Apellido, persona.Edad, persona.DNI, persona.Email FROM persona, cadete WHERE cadete.ID_Persona = persona.ID AND persona.Verificacion=1 AND cadete.Disponibilidad=1;"
         //genero la form con lo que estoy buscando
         val formBody = FormBody.Builder()
             .add("sql", query)
@@ -638,4 +659,335 @@ class NivelDatabase(context: Context) {
         return CadetesDisponibles
 
     }
+    fun ModificarEnBDD(context: Context ,Nombre :String, Contraseña: String,Apellido:String,Edad:String,DNI:String,Email:String, Latitud:Double, Longitud:Double,EmailViejo:String){
+        //variable establecida para saber donde esta la nueva persona
+        var insertedID=0;
+
+
+
+        //genero la query de sql con la contraseña hasheada
+        val query=String.format("UPDATE `persona` SET `Latitud`='%s'," +
+                "`Longitud`='%s',`Nombre`='%s',`Contraseña`='%s',`Apellido`='%s'," +
+                "`Edad`='%s',`DNI`='%s',`Email`='%s' " +
+                "WHERE `Email`='%s'",Latitud,Longitud, Nombre, BCrypt.hashpw(Contraseña,BCrypt.gensalt()), Apellido, Edad, DNI, Email,EmailViejo)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+
+
+                    }
+
+
+
+
+                }
+
+        })
+
+
+
+
+
+
+
+    }
+
+    fun crearPaquete(largo: String, ancho: String, alto: String, peso: String, context: Context):Int {
+        var insertedID=0;
+        val query=String.format("INSERT INTO `paquete`(  `Peso`, `Largo`, `Ancho`, `Alto`) VALUES ('%s','%s','%s','%s')", peso, largo, ancho, alto)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+        val countDownLatch = CountDownLatch(1)
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    //se crea una string con la respuesta del SQL siempre va a ser el ID del usuario puesto
+                    val ResponseNumber=response.body!!.string()
+                    //si se puede combertir en un numero se hace
+                    if (ResponseNumber.toDoubleOrNull() != null){
+
+
+                        insertedID= ResponseNumber.toInt()
+                        countDownLatch.countDown()
+                    }
+                    else{
+                        Toast.makeText(context, "Paquete no fue ingresado", Toast.LENGTH_SHORT)
+                        println("paquete no acceptado")
+                        countDownLatch.countDown()
+                    }
+                }
+            }
+        })
+        countDownLatch.await()
+        return insertedID
+    }
+
+    fun crearSolicitud(idPaquete: Int, latitudIni: Double, longitudIni: Double, latitudFin: Double, longitudFin: Double, idUsuario: String?, context: Context): Int {
+        var instertedID=0
+        println(idUsuario)
+        val query=String.format("INSERT INTO `solicitud`( `ID_Usuario`, `ID_Paquete`,  `ID_Estado`, `LatitudIni`, `LongitudIni`, `LatitudFin`, `LongitudFin`) VALUES ('%s','%s','%s','%s','%s','%s','%s')",
+            idUsuario, idPaquete, 1, latitudIni, longitudIni, latitudFin, longitudFin)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+        val countDownLatch = CountDownLatch(1)
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    //se crea una string con la respuesta del SQL siempre va a ser el ID del usuario puesto
+                    val ResponseNumber=response.body!!.string()
+                    //si se puede combertir en un numero se hace
+                    if (ResponseNumber.toDoubleOrNull() != null){
+
+
+                        instertedID= ResponseNumber.toInt()
+                        countDownLatch.countDown()
+                    }
+                    else{
+
+                        println("Solicitud no creada")
+                        countDownLatch.countDown()
+                    }
+                }
+            }
+        })
+        countDownLatch.await()
+
+
+        return instertedID
+    }
+
+    fun ModificarSolicitud(
+        solicitud: ResultadoSolicitud,
+        context: Context,
+        cadete: ResultadoPersona?
+    ): Any {
+        //genero la query de sql con la contraseña hasheada
+        println(cadete!!.IDCadUsu)
+        println("2")
+        println(solicitud.ID)
+        val query=String.format("UPDATE `solicitud` SET `ID_Cadete`='%s',`ID_Estado`='%s' WHERE `ID`=%s ",cadete!!.IDCadUsu,"2",solicitud.ID)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                    val responseText = response.body!!.string()
+                    println(responseText)
+                }
+            }
+        })
+        return "aa"
+    }
+
+    fun CancelarSolicitud(solicitud: ResultadoSolicitud, context: Context, ): Any {
+        //genero la query de sql con la contraseña hasheada
+        val query=String.format("UPDATE `solicitud` SET `ID_Estado`='%s' WHERE `ID`=%s ","3",solicitud.ID)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                }
+            }
+        })
+        return "aa"
+    }
+
+    fun CompletarSolicitud(solicitud: ResultadoSolicitud, context: Context): Any {
+        val query=String.format("UPDATE `solicitud` SET `ID_Estado`='%s' WHERE `ID`=%s ","5",solicitud.ID)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                }
+            }
+        })
+        return "aa"
+
+    }
+
+    fun TerminarSolicitud(solicitud: ResultadoSolicitud, context: Context): Any {
+        val query=String.format("UPDATE `solicitud` SET `ID_Estado`='%s', `fechaFin`= current_timestamp()  WHERE `ID`=%s ","4",solicitud.ID)
+        //genero la form con lo que estoy buscando
+        val formBody = FormBody.Builder()
+            .add("sql", query)
+
+            .build()
+        //transfomo la form a una request
+        val request= Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        //realizo la request con manejo de errores
+        client.newCall(request).enqueue(object : Callback {
+            //por si a caso algo falla
+            override fun onFailure(call: Call, e: IOException) {
+
+                e.printStackTrace()
+
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                //response.use es necesario para usar lo que te da el codigo php
+                response.use {
+                    //si response es un error entonces lo tira
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    //sino continua mostrando los puntos individuales que sucedieron en la conexion
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+                }
+            }
+        })
+        return "aa"
+
+    }
+
+
 }

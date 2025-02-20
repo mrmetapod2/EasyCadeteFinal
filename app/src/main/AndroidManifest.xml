@@ -19,6 +19,18 @@
         android:theme="@style/Theme.EasyCadete"
         tools:targetApi="31">
         <activity
+            android:name=".ObservarSolicitudCadete"
+            android:exported="false" />
+        <activity
+            android:name=".SolicitudesUsuario"
+            android:exported="false" />
+        <activity
+            android:name=".DirectionMap"
+            android:exported="false" />
+        <activity
+            android:name=".AsignarSolicitud"
+            android:exported="false" />
+        <activity
             android:name=".ModificarDatos"
             android:exported="false" />
         <activity

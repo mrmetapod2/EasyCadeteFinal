@@ -1,6 +1,5 @@
 package com.example.easycadete
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -29,8 +28,20 @@ class PantallaCadete : AppCompatActivity() {
             startActivity(intent)
         }
         val ModifBut=findViewById<Button>(R.id.button8)
-        DatosBut.setOnClickListener(){
+        ModifBut.setOnClickListener(){
             val intent = Intent(this, ModificarDatos::class.java)
+            intent.putExtra("result",Datos)
+            startActivity(intent)
+        }
+        val AsignarBut=findViewById<Button>(R.id.button9)
+        AsignarBut.setOnClickListener(){
+            val intent = Intent(this, AsignarSolicitud::class.java)
+            intent.putExtra("result",Datos)
+            startActivity(intent)
+        }
+        val SolBut=findViewById<Button>(R.id.button10)
+        SolBut.setOnClickListener(){
+            val intent = Intent(this, ObservarSolicitudCadete::class.java)
             intent.putExtra("result",Datos)
             startActivity(intent)
         }

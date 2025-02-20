@@ -14,9 +14,11 @@ data class ResultadoPersona(
     val Telefono: String?=null,
     var UsuarioOCadete: String?=null,
     val Latitud : String?=null,
-    val Longitud: String?=null
+    val Longitud: String?=null,
+    var IDCadUsu: String?=null
 ): Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
@@ -43,6 +45,7 @@ data class ResultadoPersona(
         parcel.writeString(UsuarioOCadete)
         parcel.writeString(Latitud)
         parcel.writeString(Longitud)
+        parcel.writeString(IDCadUsu)
     }
 
     override fun describeContents(): Int {

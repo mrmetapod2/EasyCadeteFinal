@@ -19,7 +19,7 @@ import kotlin.properties.Delegates
 
 class Registrar : AppCompatActivity() {
 
-    private lateinit var dbHelper: BaseDeDatos
+
 
     private lateinit var textOrigen: TextView
     private lateinit var btnOrigen: Button
@@ -40,7 +40,7 @@ class Registrar : AppCompatActivity() {
             insets
 
         }
-        dbHelper = BaseDeDatos(this)
+
         val Usuario= findViewById<EditText>(R.id.editTextText2)
         val Contraseña= findViewById<EditText>(R.id.editTextText3)
         val RegistrarBut= findViewById<Button>(R.id.button2)
